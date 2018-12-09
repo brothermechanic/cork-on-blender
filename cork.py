@@ -37,7 +37,7 @@ def slice_out(context, cork, method, base, plane):
         raise InvalidTemporaryDir(E)
 
     scene = context.scene
-    active = scene.objects.active
+    active = context.active_object
 
     filepath_base = os.path.join(dirpath, 'base.off')
     filepath_plane = os.path.join(dirpath, 'plane.off')
@@ -50,24 +50,24 @@ def slice_out(context, cork, method, base, plane):
 
     # export base
     print("Exporting file \"{0}\"".format(filepath_base))
-    scene.objects.active = base
+    context.view_layer.objects.active = base
     if bpy.ops.export_mesh.off.poll():
         modifier = create_triangulate_modifier(base)
         bpy.ops.export_mesh.off(filepath=filepath_base)
         delete_triangulate_modifier(base, modifier)
     else:
-        scene.objects.active = active
+        context.view_layer.objects.active = active
         raise ExportMeshException(base, filepath_base)
 
     # export plane to OFF
     print("Exporting file \"{0}\"".format(filepath_plane))
-    scene.objects.active = plane
+    context.view_layer.objects.active = plane
     if bpy.ops.export_mesh.off.poll():
         modifier = create_triangulate_modifier(plane)
         bpy.ops.export_mesh.off(filepath=filepath_plane)
         delete_triangulate_modifier(plane, modifier)
     else:
-        scene.objects.active = active
+        context.view_layer.objects.active = active
         raise ExportMeshException(plane, filepath_plane)
 
     # call cork with arguments
@@ -82,18 +82,18 @@ def slice_out(context, cork, method, base, plane):
     if bpy.ops.import_mesh.off.poll():
         bpy.ops.import_mesh.off(filepath=filepath_result)
     else:
-        scene.objects.active = active
+        context.view_layer.objects.active = active
         raise ImportMeshException(filepath_result)
 
     # move object to a new layer
     result = [obj for obj in context.selected_objects if obj not in (base, plane)][0]
-    result.layers[1] = True
-    result.select = False
+    #result.layers[1] = True
+    result.select_set(False)
 
     print("Object \"{0}\" created successfully".format(result.name))
 
     # restore previous status
-    scene.objects.active = active
+    context.view_layer.objects.active = active
 
     # cleanup temporary folder
     shutil.rmtree(dirpath)
