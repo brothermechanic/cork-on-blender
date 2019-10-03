@@ -7,7 +7,7 @@ def get_addon_name():
 def get_cork_filepath(context):
     """preference set in the addon"""
     addon = get_addon_name()
-    preferences = context.user_preferences.addons[addon].preferences
+    preferences = context.preferences.addons[addon].preferences
     return preferences.cork_filepath
 
 
